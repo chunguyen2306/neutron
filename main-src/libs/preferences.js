@@ -129,6 +129,7 @@ const defaultPreferences = {
   standaloneLicenseKey: undefined,
   standaloneRegistered: false,
   swipeToNavigate: true,
+  tabsEnabble: false,
   telemetry: false,
   themeColor: 'auto',
   themeSource: 'system',

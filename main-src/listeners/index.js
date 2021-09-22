@@ -11,6 +11,7 @@ const {
   ipcMain,
   nativeTheme,
   shell,
+  BrowserView,
 } = require('electron');
 
 const {
@@ -35,8 +36,8 @@ const {
   removeWorkspacePicture,
   setWorkspaceAccountInfo,
   removeWorkspaceAccountInfo,
+  setWorkspace,
 } = require('../libs/workspaces');
-
 const {
   getWorkspaceMeta,
   getWorkspaceMetas,
@@ -65,6 +66,10 @@ const {
   reloadViewsDarkReader,
   reloadViewsWebContentsIfDidFailLoad,
   setViewsAudioPref,
+  setBrowserView,
+  constructBrowserViewKey,
+  getBrowserViews,
+  getBrowserView,
 } = require('../libs/views');
 
 const {
@@ -684,6 +689,96 @@ const loadListeners = () => {
 
   ipcMain.on('request-track-add-workspace', (_, deviceId, appId) => {
     trackAddWorkspaceAsync(deviceId, appId);
+  });
+
+  ipcMain.on('request-new-tab-browser', (_, tabInfo) => {
+    const win = mainWindow.get();
+    const browserView = win.getBrowserView();
+
+    const { tabIndex, homeUrl } = tabInfo;
+    // Workspace ID
+    const { id, tabs } = getActiveWorkspace();
+    const lastUrl = browserView.webContents.getURL();
+
+    // Update workspace config
+    setWorkspace(id, {
+      tabs: {
+        ...tabs,
+        [tabIndex]: { homeUrl, lastUrl },
+      },
+    });
+  });
+
+  ipcMain.on('request-open-tab-browser', (_, tabInfo) => {
+    const { newTabIndex, selectedTabIndex } = tabInfo;
+    const currentWorkspace = getActiveWorkspace();
+    const win = mainWindow.get();
+    const currentBrowserView = win.getBrowserView();
+
+    // Latest Url from tab session.
+    const { id, lastUrl, tabs } = currentWorkspace;
+
+    // Construct keys for new browserView to be added and browserView to update.
+    const currentBrowserViewKey = constructBrowserViewKey(id, selectedTabIndex);
+    const newBrowserViewKey = constructBrowserViewKey(id, newTabIndex);
+
+    // Get new browserView from current dataset.
+    const newBrowserView = getBrowserView(newBrowserViewKey);
+
+    // Preserve current browserView.
+    setBrowserView(currentBrowserViewKey, currentBrowserView);
+
+    // Update workspace config
+    setWorkspace(id, {
+      tabs: {
+        ...tabs,
+        tabIndex: {
+          ...tabs[newTabIndex],
+          lastUrl,
+        },
+      },
+    });
+
+    // Clear current browserView to prevent memory leaks.
+    win.setBrowserView(undefined);
+
+    if (newBrowserView) {
+      win.setBrowserView(newBrowserView);
+    } else {
+      const browserView = new BrowserView();
+      win.setBrowserView(browserView);
+
+      const contentSize = win.getContentSize();
+      const {
+        x,
+        y,
+        width,
+        height,
+      } = getViewBounds(contentSize);
+
+      browserView.setBounds({
+        x,
+        y: y + 48,
+        width,
+        height,
+      });
+      browserView.setBackgroundColor('#FFF');
+      browserView.webContents.loadURL(lastUrl);
+    }
+  });
+
+  ipcMain.on('request-close-tab-browser', (_, tabInfo) => {
+    const { tabIndex } = tabInfo;
+    const { id, tabs } = getActiveWorkspace();
+
+    const win = mainWindow.get();
+    const browserView = win.getBrowserView();
+    const webContents = browserView.webContents;
+
+    delete tabs[tabIndex];
+    webContents.forcefullyCrashRenderer();
+
+    setWorkspace(id, { tabs });
   });
 };
 

@@ -31,6 +31,7 @@ import {
 } from '../../senders';
 
 import './main.css';
+import TabBar from './tab-bar';
 
 const useStyles = makeStyles((theme) => ({
   outerRoot: {
@@ -166,6 +167,7 @@ const Main = ({
       <div className={classnames(classes.root, rtl && classes.rootRtl)}>
         {sidebar && <Sidebar />}
         <div className={classes.contentRoot}>
+          <TabBar />
           {navigationBar && <NavigationBar themeColor={themeColor} />}
           <FindInPage />
           <div className={classes.innerContentRoot}>

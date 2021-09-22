@@ -54,6 +54,7 @@ const isWebcatalog = require('./is-webcatalog');
 const getFirefoxUserAgent = require('./get-firefox-user-agent');
 
 const views = {};
+const browserViews = {};
 let shouldMuteAudio;
 let shouldPauseNotifications;
 
@@ -1153,6 +1154,18 @@ const addViewAsync = async (browserWindow, workspace) => {
   }
 };
 
+const getBrowserViews = () => browserViews;
+const getBrowserView = (id) => browserViews[id];
+const setBrowserView = (id, browserView) => {
+  browserViews[id] = browserView;
+};
+const removeBrowserView = (id) => {
+  if (browserViews[id]) {
+    delete browserViews[id];
+  }
+};
+const constructBrowserViewKey = (id, tabIndex) => `${id}/${tabIndex}`;
+
 const getView = (id) => views[id];
 
 const setActiveView = (browserWindow, id) => {
@@ -1180,7 +1193,15 @@ const setActiveView = (browserWindow, id) => {
         getViewBounds(contentSize, false, 0, 0),
       ); // hide browserView to show error message
     } else {
-      view.setBounds(getViewBounds(contentSize));
+      const { x, y, width, height } = getViewBounds(contentSize);
+
+      view.setBounds({
+        x,
+        y: y + 48,
+        width,
+        height
+      });
+      // view.setBounds(getViewBounds(contentSize));
     }
     view.setAutoResize({
       width: true,
@@ -1218,7 +1239,15 @@ const realignActiveView = (browserWindow, activeId) => {
         getViewBounds(contentSize, false, 0, 0),
       ); // hide browserView to show error message
     } else {
-      view.setBounds(getViewBounds(contentSize));
+      const { x, y, width, height } = getViewBounds(contentSize);
+
+      console.log(getViewBounds(contentSize))
+      view.setBounds({
+        x,
+        y: y + 48,
+        width,
+        height
+      });
     }
   }
 };
@@ -1333,4 +1362,9 @@ module.exports = {
   setActiveView,
   setViewsAudioPref,
   setViewsNotificationsPref,
+  getBrowserViews,
+  getBrowserView,
+  setBrowserView,
+  removeBrowserView,
+  constructBrowserViewKey,
 };

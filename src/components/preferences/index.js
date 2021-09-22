@@ -29,6 +29,7 @@ import RotateLeftIcon from '@material-ui/icons/RotateLeft';
 import RouterIcon from '@material-ui/icons/Router';
 import SaveAltIcon from '@material-ui/icons/SaveAlt';
 import SecurityIcon from '@material-ui/icons/Security';
+import TabIcon from '@material-ui/icons/Tab';
 import ViewListIcon from '@material-ui/icons/ViewList';
 import WebAssetIcon from '@material-ui/icons/WebAsset';
 import WidgetsIcon from '@material-ui/icons/Widgets';
@@ -69,6 +70,7 @@ import SectionReset from './section-reset';
 import SectionSearch from './section-search';
 import SectionSystem from './section-system';
 import SectionTelemetry from './section-telemetry';
+import SectionTab from './section-tab';
 import SectionTheme from './section-theme';
 import SectionTray from './section-tray';
 import SectionView from './section-view';
@@ -247,6 +249,13 @@ const Preferences = ({
       Icon: SecurityIcon,
       subSections: {
         privacy: { text: 'Privacy', Component: SectionPrivacy },
+      },
+    },
+    tabs: {
+      text: 'Tabs',
+      Icon: TabIcon,
+      subSections: {
+        telemetry: { text: 'Tabs', Component: SectionTab },
       },
     },
     telemetry: {
